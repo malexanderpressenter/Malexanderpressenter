@@ -1,0 +1,33 @@
+// This function logs the edit details in the "Change Log" sheet
+function logEdit(e) {
+  // Load the active spreadsheet and change log sheet
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var logSheet = ss.getSheetByName('Change Log');
+  
+  // If the "Change Log" sheet doesn't exist, create it
+  if (!logSheet) {
+    logSheet = ss.insertSheet('Change Log');
+    // Set up the header row
+    logSheet.appendRow(['Timestamp', 'User', 'Sheet', 'Cell', 'Old Value', 'New Value']);
+  }
+
+  // Get edit details
+  var user = Session.getActiveUser().getEmail(); // Note: May not work as expected due to Google's privacy policy
+  var sheet = e.source.getActiveSheet().getName();
+  var range = e.range.getA1Notation();
+  var oldValue = e.oldValue || 'N/A'; // If there's no old value, use 'N/A'
+  var newValue = e.value || 'N/A'; // If there's no new value, use 'N/A'
+  var timestamp = new Date();
+
+  // Log the details in the "Change Log" sheet
+  logSheet.appendRow([timestamp, user, sheet, range, oldValue, newValue]);
+}
+
+// This sets up the onEdit trigger to run the logEdit function every time an edit is made
+function createOnEditTrigger() {
+  var ss = SpreadsheetApp.getActive();
+  ScriptApp.newTrigger('logEdit')
+    .forSpreadsheet(ss)
+    .onEdit()
+    .create();
+}
